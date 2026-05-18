@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Submind — The Autonomous Finance Brain</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #060810;
+    --bg2: #080c14;
+    --lime: #b6ff4b;
+    --lime2: #d4ff7a;
+    --lime-glow: rgba(182,255,75,0.18);
+    --lime-glow2: rgba(182,255,75,0.07);
+    --white: #f0f4ff;
+    --grey: #8a94b0;
+    --grey2: #3a4158;
+    --card: rgba(12,18,32,0.85);
+    --border: rgba(182,255,75,0.13);
+    --border2: rgba(255,255,255,0.06);
+    --font: 'IBM Plex Sans', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+    --radius: 18px;
+    --section-h: 100vh;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: var(--font);
+    color: var(--white);
+    cursor: none;
+  }
+
+  /* ── CUSTOM CURSOR ── */
+  #cursor {
+    position: fixed; width: 14px; height: 14px;
+    border-radius: 50%; background: var(--lime);
+    pointer-events: none; z-index: 9999;
+    transform: translate(-50%,-50%);
+    transition: transform 0.08s, width 0.2s, height 0.2s, opacity 0.2s;
+    mix-blend-mode: difference;
+  }
+  #cursor-ring {
+    position: fixed; width: 40px; height: 40px;
+    border-radius: 50%; border: 1.5px solid var(--lime);
+    pointer-events: none; z-index: 9998;
+    transform: translate(-50%,-50%);
+    transition: transform 0.18s ease, width 0.25s, height 0.25s, opacity 0.3s;
+    opacity: 0.5;
+  }
+  body:hover #cursor { opacity: 1; }
+
+  /* ── SCENE WRAPPER ── */
+  #scene {
+    position: fixed; inset: 0;
+    perspective: 900px;
+    perspective-origin: 50% 50%;
+    overflow: hidden;
+  }
+
+  #stage {
+    position: absolute;
+    width: 100%; height: 100%;
+    transform-style: preserve-3d;
+    will-change: transform;
+    transition: transform 1.1s cubic-bezier(0.77,0,0.18,1);
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    position: absolute;
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    transition: opacity 0.9s cubic-bezier(0.77,0,0.18,1), filter 0.9s cubic-bezier(0.77,0,0.18,1);
+    opacity: 1;
+    filter: blur(0px);
+  }
+  .section.inactive {
+    opacity: 0;
+    filter: blur(18px);
+    pointer-events: none;
+  }
+
+  /* Section Z-depths – Igloo zoom in/out */
+  #s0 { transform: translateZ(0px); }
+  #s1 { transform: translateZ(-1400px) translateY(0px); }
+  #s2 { transform: translateZ(-2800px); }
+  #s3 { transform: translateZ(-4200px); }
+  #s4 { transform: translateZ(-5600px); }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(6, 8, 16, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .nav-inner {
+    width: 100%;
+    padding: 14px 56px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo {
+    font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em;
+    color: var(--white);
+  }
+  .nav-logo span { color: var(--lime); }
+  .nav-links { display: flex; gap: 36px; }
+  .nav-links a {
+    font-size: 0.85rem; font-weight: 400; color: var(--grey);
+    text-decoration: none; letter-spacing: 0.04em;
+    text-transform: uppercase; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--lime); }
+  .nav-cta {
+    background: var(--lime); color: #060810;
+    font-family: var(--font); font-size: 0.82rem; font-weight: 700;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    border: none; border-radius: 100px; padding: 11px 28px;
+    cursor: none; transition: transform 0.18s, box-shadow 0.18s;
+    box-shadow: 0 0 24px rgba(182,255,75,0.3);
+  }
+  .nav-cta:hover { transform: scale(1.04); box-shadow: 0 0 40px rgba(182,255,75,0.5); }
+
+  /* ── PROGRESS DOTS ── */
+  #dots {
+    position: fixed; right: 40px; top: 50%;
+    transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 12px;
+    z-index: 200;
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    border: 1.5px solid var(--grey2);
+    cursor: none; transition: all 0.3s;
+    background: transparent;
+  }
+  .dot.active { background: var(--lime); border-color: var(--lime); box-shadow: 0 0 10px var(--lime); }
+
+  /* ── GLOBAL GRID OVERLAY ── */
+  .grid-bg {
+    position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(182,255,75,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(182,255,75,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black, transparent);
+  }
+
+  /* ── SECTION 0 — HERO ── */
+  #s0 .inner {
+    position: relative; z-index: 2;
+    width: 100%; max-width: 1200px; margin: 0 auto;
+    padding: 0 56px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 60px;
+    align-items: center;
+  }
+  .hero-tag {
+    font-family: var(--mono); font-size: 0.72rem; color: var(--lime);
+    letter-spacing: 0.18em; text-transform: uppercase;
+    margin-bottom: 24px; display: flex; align-items: center; gap: 10px;
+  }
+  .hero-tag::before {
+    content: ''; display: block; width: 28px; height: 1.5px; background: var(--lime);
+  }
+  .hero-h1 {
+    font-size: clamp(2.8rem,5vw,4.2rem); font-weight: 700;
+    line-height: 1.05; letter-spacing: -0.03em;
+    margin-bottom: 22px;
+  }
+  .hero-h1 em { font-style: normal; color: var(--lime); }
+  .hero-sub {
+    font-size: 1.05rem; font-weight: 300; color: var(--grey);
+    line-height: 1.7; max-width: 560px; margin-bottom: 40px;
+  }
+  .hero-btns { display: flex; gap: 16px; align-items: center; }
+  .btn-primary {
+    background: var(--lime); color: #060810;
+    font-family: var(--font); font-size: 0.88rem; font-weight: 700;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    border: none; border-radius: 100px; padding: 14px 36px;
+    cursor: none; transition: all 0.2s;
+    box-shadow: 0 0 32px rgba(182,255,75,0.35);
+  }
+  .btn-primary:hover { transform: scale(1.04) translateY(-1px); box-shadow: 0 0 60px rgba(182,255,75,0.55); }
+  .btn-ghost {
+    background: transparent; color: var(--white);
+    font-family: var(--font); font-size: 0.88rem; font-weight: 400;
+    letter-spacing: 0.04em;
+    border: 1px solid var(--border2); border-radius: 100px; padding: 14px 30px;
+    cursor: none; transition: all 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--lime); color: var(--lime); }
+
+  .hero-stats {
+    display: flex; gap: 36px; margin-top: 50px;
+    padding-top: 32px; border-top: 1px solid var(--border2);
+  }
+  .stat-val {
+    font-size: 2rem; font-weight: 700; color: var(--lime); letter-spacing: -0.02em;
+  }
+  .stat-lbl {
+    font-size: 0.77rem; color: var(--grey); font-family: var(--mono);
+    letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px;
+  }
+
+  /* HERO RIGHT — 3D phone mockup */
+  .hero-right {
+    position: relative; display: flex; justify-content: center; align-items: center;
+  }
+  .phone-wrap {
+    position: relative; transform-style: preserve-3d;
+    animation: float 5s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%,100% { transform: rotateY(-12deg) rotateX(6deg) translateY(0); }
+    50% { transform: rotateY(-8deg) rotateX(3deg) translateY(-16px); }
+  }
+  .phone {
+    width: 220px; height: 440px; border-radius: 36px;
+    background: linear-gradient(145deg, #0e1828, #0a1020);
+    border: 1.5px solid rgba(182,255,75,0.25);
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,0.5),
+      0 40px 80px rgba(0,0,0,0.7),
+      0 0 60px rgba(182,255,75,0.1),
+      inset 0 1px 0 rgba(255,255,255,0.07);
+    overflow: hidden; position: relative;
+    transform-style: preserve-3d;
+  }
+  .phone-screen {
+    position: absolute; inset: 12px; border-radius: 24px;
+    background: linear-gradient(160deg, #0b1525, #060c18);
+    overflow: hidden; padding: 18px;
+  }
+  .phone-ticker {
+    font-family: var(--mono); font-size: 0.6rem; color: var(--grey);
+    letter-spacing: 0.05em; margin-bottom: 14px;
+  }
+  .phone-val {
+    font-size: 1.6rem; font-weight: 700; color: var(--white);
+    letter-spacing: -0.02em; margin-bottom: 2px;
+  }
+  .phone-change { font-size: 0.72rem; color: var(--lime); font-family: var(--mono); margin-bottom: 14px; }
+  .phone-chart {
+    width: 100%; height: 70px; position: relative; margin-bottom: 16px;
+  }
+  .phone-chart svg { width: 100%; height: 100%; }
+  .phone-assets { display: flex; flex-direction: column; gap: 8px; }
+  .phone-asset {
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(255,255,255,0.04); border-radius: 10px;
+    padding: 7px 10px;
+  }
+  .pa-name { font-size: 0.65rem; font-weight: 600; color: var(--white); }
+  .pa-sub { font-size: 0.55rem; color: var(--grey); font-family: var(--mono); }
+  .pa-val { font-size: 0.65rem; color: var(--lime); font-family: var(--mono); font-weight: 500; }
+
+  /* Glow orbs */
+  .orb {
+    position: absolute; border-radius: 50%;
+    pointer-events: none; z-index: 0;
+    filter: blur(80px); opacity: 0.6;
+  }
+  .orb-lime { background: radial-gradient(circle, rgba(182,255,75,0.3), transparent 70%); }
+  .orb-blue { background: radial-gradient(circle, rgba(40,120,255,0.2), transparent 70%); }
+
+  /* Floating particles */
+  .particles { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+  .particle {
+    position: absolute; width: 2px; height: 2px;
+    background: var(--lime); border-radius: 50%;
+    opacity: 0; animation: rise linear infinite;
+  }
+  @keyframes rise {
+    0% { opacity: 0; transform: translateY(0) scale(0.5); }
+    10% { opacity: 0.6; }
+    90% { opacity: 0.3; }
+    100% { opacity: 0; transform: translateY(-120vh) scale(1.5); }
+  }
+
+  /* ── SECTION 1 — TRUST / FEATURES ── */
+  #s1 .inner {
+    width: 100%; max-width: 1200px; margin: 0 auto;
+    padding: 0 56px; position: relative; z-index: 2;
+  }
+  .section-eyebrow {
+    font-family: var(--mono); font-size: 0.72rem; color: var(--lime);
+    letter-spacing: 0.18em; text-transform: uppercase;
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  .section-eyebrow::before { content: ''; display: block; width: 28px; height: 1.5px; background: var(--lime); }
+  .section-h2 {
+    font-size: clamp(2rem,3.5vw,3rem); font-weight: 700;
+    letter-spacing: -0.025em; line-height: 1.1; margin-bottom: 34px;
+  }
+  .section-h2 em { font-style: normal; color: var(--lime); }
+
+  .features-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    align-items: stretch;
+  }
+  .feat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 24px;
+    position: relative; overflow: hidden;
+    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    cursor: none;
+    display: flex; flex-direction: column; height: 100%;
+  }
+  .feat-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(182,255,75,0.35);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(182,255,75,0.08);
+  }
+  .feat-card.featured {
+    border-color: rgba(182,255,75,0.4);
+    background: linear-gradient(145deg, rgba(182,255,75,0.07), var(--card));
+  }
+  .feat-num {
+    font-family: var(--mono); font-size: 0.65rem; color: var(--lime);
+    letter-spacing: 0.15em; margin-bottom: 12px;
+    opacity: 0.7;
+  }
+  .feat-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: rgba(182,255,75,0.1); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 12px; font-size: 1.2rem;
+  }
+  .feat-title {
+    font-size: 1.05rem; font-weight: 600; margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+  .feat-desc {
+    font-size: 0.85rem; color: var(--grey); line-height: 1.65; font-weight: 300;
+  }
+  .feat-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.8rem; color: var(--lime); font-family: var(--mono);
+    text-decoration: none; margin-top: 12px; letter-spacing: 0.06em;
+    cursor: none;
+  }
+  .feat-link::after { content: '→'; transition: transform 0.2s; }
+  .feat-link:hover::after { transform: translateX(4px); }
+
+  /* ── SECTION 2 — HOW IT WORKS ── */
+  #s2 .inner {
+    width: 100%; max-width: 1200px; margin: 0 auto;
+    padding: 0 56px; position: relative; z-index: 2;
+  }
+  .timeline {
+    display: flex; gap: 0; position: relative; width: 100%;
+  }
+  .timeline::before {
+    content: ''; position: absolute;
+    top: 28px; left: 28px; right: 28px; height: 1px;
+    background: linear-gradient(to right, transparent, var(--lime), var(--lime), transparent);
+    opacity: 0.3;
+  }
+  .tl-step {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    text-align: center; padding: 0 16px; position: relative;
+  }
+  .tl-dot {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--bg2); border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 0.75rem; font-weight: 500; color: var(--lime);
+    margin-bottom: 20px; position: relative; z-index: 1;
+    transition: all 0.3s;
+    box-shadow: 0 0 0 0 rgba(182,255,75,0);
+  }
+  .tl-step:hover .tl-dot {
+    background: rgba(182,255,75,0.1); border-color: var(--lime);
+    box-shadow: 0 0 24px rgba(182,255,75,0.3);
+  }
+  .tl-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 8px; }
+  .tl-desc { font-size: 0.8rem; color: var(--grey); line-height: 1.6; font-weight: 300; }
+
+  /* big number bg text */
+  .bg-num {
+    position: absolute; font-size: 22vw; font-weight: 700;
+    color: rgba(182,255,75,0.025); letter-spacing: -0.05em;
+    pointer-events: none; z-index: 0; user-select: none;
+    top: 50%; transform: translateY(-50%);
+    right: -4vw; line-height: 1;
+  }
+
+  /* ── SECTION 3 — DASHBOARD PREVIEW ── */
+  #s3 .inner {
+    width: 100%; max-width: 1200px; margin: 0 auto;
+    padding: 0 56px; position: relative; z-index: 2;
+  }
+  .dashboard-wrap {
+    width: 100%; max-width: 1000px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.7), 0 0 60px rgba(182,255,75,0.05);
+    transform-style: preserve-3d;
+    animation: dashFloat 7s ease-in-out infinite;
+  }
+  @keyframes dashFloat {
+    0%,100% { transform: rotateX(2deg) rotateY(-1deg); }
+    50% { transform: rotateX(0deg) rotateY(1deg); }
+  }
+  .dash-header {
+    background: rgba(182,255,75,0.06);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .dash-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dd1 { background: #ff5f57; }
+  .dd2 { background: #febc2e; }
+  .dd3 { background: #28c840; }
+  .dash-title {
+    font-family: var(--mono); font-size: 0.7rem; color: var(--grey);
+    letter-spacing: 0.08em; margin-left: 8px;
+  }
+  .dash-body {
+    padding: 28px; display: grid;
+    grid-template-columns: 1fr 1fr 1fr; gap: 16px;
+  }
+  .dash-metric {
+    background: rgba(255,255,255,0.03); border-radius: 14px;
+    border: 1px solid var(--border2); padding: 18px;
+  }
+  .dm-lbl { font-size: 0.7rem; color: var(--grey); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+  .dm-val { font-size: 1.7rem; font-weight: 700; color: var(--white); letter-spacing: -0.02em; }
+  .dm-chg { font-size: 0.72rem; color: var(--lime); font-family: var(--mono); margin-top: 4px; }
+  .dash-wide {
+    grid-column: 1 / -1; background: rgba(255,255,255,0.02);
+    border-radius: 14px; border: 1px solid var(--border2); padding: 20px;
+  }
+  .dash-wide-title { font-size: 0.72rem; color: var(--grey); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; }
+  .dash-chart-svg { width: 100%; height: 80px; }
+
+  /* AI actions list */
+  .ai-actions { display: flex; flex-direction: column; gap: 10px; grid-column: span 3; }
+  .ai-action {
+    display: flex; align-items: center; gap: 14px;
+    background: rgba(255,255,255,0.025); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 12px 16px;
+  }
+  .aa-status {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--lime); box-shadow: 0 0 6px var(--lime);
+    animation: pulse 2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .aa-text { font-size: 0.8rem; color: var(--grey); font-family: var(--mono); }
+  .aa-time { font-size: 0.68rem; color: var(--grey2); font-family: var(--mono); margin-left: auto; flex-shrink: 0; }
+
+  /* ── SECTION 4 — CTA ── */
+  #s4 .inner {
+    width: 100%; max-width: 900px; margin: 0 auto;
+    padding: 0 56px; text-align: center; position: relative; z-index: 2;
+  }
+  .cta-pre { font-family: var(--mono); font-size: 0.72rem; color: var(--lime); letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 22px; }
+  .cta-h2 { font-size: clamp(2.5rem,5vw,4rem); font-weight: 700; letter-spacing: -0.03em; line-height: 1.06; margin-bottom: 20px; }
+  .cta-h2 em { font-style: normal; color: var(--lime); }
+  .cta-sub { font-size: 1rem; color: var(--grey); font-weight: 300; line-height: 1.7; margin-bottom: 44px; max-width: 620px; margin-left: auto; margin-right: auto; }
+  .cta-input-wrap {
+    display: flex; gap: 12px; max-width: 480px; margin: 0 auto 24px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border2);
+    border-radius: 100px; padding: 6px 6px 6px 24px;
+    transition: border-color 0.3s;
+  }
+  .cta-input-wrap:focus-within { border-color: rgba(182,255,75,0.35); }
+  .cta-input-wrap input {
+    flex: 1; background: transparent; border: none; outline: none;
+    font-family: var(--font); font-size: 0.88rem; color: var(--white);
+  }
+  .cta-input-wrap input::placeholder { color: var(--grey2); }
+  .cta-badges {
+    display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 32px;
+  }
+  .badge {
+    font-family: var(--mono); font-size: 0.68rem; color: var(--grey);
+    display: flex; align-items: center; gap: 6px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .badge::before { content: '✓'; color: var(--lime); font-weight: 700; }
+
+  /* ── FOOTER ── */
+  footer {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+    background: linear-gradient(to top, rgba(6,8,16,0.95) 60%, transparent);
+  }
+  .footer-inner {
+    width: 100%;
+    padding: 18px 56px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .footer-copy { font-size: 0.72rem; color: var(--grey2); font-family: var(--mono); letter-spacing: 0.05em; }
+  .scroll-hint {
+    font-size: 0.7rem; color: var(--grey); font-family: var(--mono);
+    letter-spacing: 0.1em; text-transform: uppercase;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .scroll-arrow {
+    display: flex; flex-direction: column; gap: 2px;
+    animation: scrollBounce 2s ease-in-out infinite;
+  }
+  @keyframes scrollBounce {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(4px); }
+  }
+  .scroll-arrow span {
+    display: block; width: 14px; height: 1.5px; background: var(--grey);
+    transform-origin: right;
+  }
+  .scroll-arrow span:nth-child(1) { transform: rotate(35deg) translateX(4px); }
+  .scroll-arrow span:nth-child(2) { transform: rotate(-35deg) translateX(4px); }
+
+  /* section index display */
+  .section-label-wrap {
+    position: fixed; left: 0; bottom: 64px; right: 0; z-index: 200;
+    pointer-events: none;
+  }
+  .section-label-inner {
+    width: 100%; padding: 0 56px;
+  }
+  #section-label {
+    font-family: var(--mono); font-size: 0.65rem; color: var(--grey2);
+    letter-spacing: 0.12em; text-transform: uppercase;
+    transition: opacity 0.5s;
+    pointer-events: auto;
+  }
+
+  /* ── SCAN LINE EFFECT ── */
+  .scanline {
+    position: fixed; inset: 0; z-index: 300; pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(0,0,0,0.04) 3px,
+      rgba(0,0,0,0.04) 4px
+    );
+    animation: scanMove 8s linear infinite;
+  }
+  @keyframes scanMove {
+    0% { background-position-y: 0; }
+    100% { background-position-y: 40px; }
+  }
+
+  /* ── TRANSITION OVERLAY ── */
+  #overlay {
+    position: fixed; inset: 0; z-index: 500; pointer-events: none;
+    background: var(--bg); opacity: 0;
+    transition: opacity 0.3s;
+  }
+  #overlay.flash { opacity: 0.35; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    #s0 .inner { grid-template-columns: 1fr; }
+    .hero-right { display: none; }
+    .features-grid { grid-template-columns: 1fr; }
+    .nav-inner, .footer-inner, .section-label-inner { padding: 18px 24px; }
+    #s0 .inner, #s1 .inner, #s2 .inner, #s3 .inner, #s4 .inner { padding: 0 24px; }
+    nav .nav-links { display: none; }
+    #dots { right: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<div class="scanline"></div>
+<div id="overlay"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">Sub<span>mind</span></div>
+    <div class="nav-links">
+      <a href="#" onclick="goTo(0);return false">Home</a>
+      <a href="#" onclick="goTo(1);return false">Features</a>
+      <a href="#" onclick="goTo(2);return false">How It Works</a>
+      <a href="#" onclick="goTo(3);return false">Platform</a>
+      <a href="#" onclick="goTo(4);return false">Access</a>
+    </div>
+    <button class="nav-cta" onclick="goTo(4)">Get Early Access</button>
+  </div>
+</nav>
+
+<!-- PROGRESS DOTS -->
+<div id="dots">
+  <div class="dot active" onclick="goTo(0)"></div>
+  <div class="dot" onclick="goTo(1)"></div>
+  <div class="dot" onclick="goTo(2)"></div>
+  <div class="dot" onclick="goTo(3)"></div>
+  <div class="dot" onclick="goTo(4)"></div>
+</div>
+
+<div class="section-label-wrap"><div class="section-label-inner"><div id="section-label">01 / 05 — Overview</div></div></div>
+
+<!-- SCENE -->
+<div id="scene">
+  <div id="stage">
+
+    <!-- ── S0: HERO ── -->
+    <section class="section" id="s0">
+      <div class="grid-bg"></div>
+      <div class="particles" id="particles0"></div>
+
+      <div class="orb orb-lime" style="width:600px;height:600px;top:-100px;left:-100px;opacity:0.35;"></div>
+      <div class="orb orb-blue" style="width:500px;height:500px;bottom:-150px;right:-50px;opacity:0.25;"></div>
+
+      <div class="inner">
+        <div class="hero-left">
+          <div class="hero-tag">AUTONOMOUS FINANCE AI</div>
+          <h1 class="hero-h1">Your money,<br/><em>fixing</em> itself.</h1>
+          <p class="hero-sub">Submind is your AI finance brain — automatically detecting waste, canceling unused subscriptions, recovering lost money, and optimizing recurring spend while you focus on life.</p>
+          <div class="hero-btns">
+            <button class="btn-primary" onclick="goTo(4)">Access The Brain</button>
+            <button class="btn-ghost" onclick="goTo(2)">See How It Works →</button>
+          </div>
+          <div class="hero-stats">
+            <div>
+              <div class="stat-val">₹12Cr+</div>
+              <div class="stat-lbl">Saved</div>
+            </div>
+            <div>
+              <div class="stat-val">48K+</div>
+              <div class="stat-lbl">Active Users</div>
+            </div>
+            <div>
+              <div class="stat-val">99.9%</div>
+              <div class="stat-lbl">Detection Accuracy</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-right">
+          <div class="phone-wrap">
+            <div class="phone">
+              <div class="phone-screen">
+                <div class="phone-ticker">SUBMIND · DETECTED WASTE</div>
+                <div class="phone-val">₹24,580</div>
+                <div class="phone-change">↓ Saved This Month: ₹8,340</div>
+                <div class="phone-chart">
+                  <svg viewBox="0 0 196 70" preserveAspectRatio="none">
+                    <defs>
+                      <linearGradient id="chartGrad" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stop-color="#b6ff4b" stop-opacity="0.3"/>
+                        <stop offset="100%" stop-color="#b6ff4b" stop-opacity="0"/>
+                      </linearGradient>
+                    </defs>
+                    <path d="M0,55 C20,50 30,40 50,35 S80,20 100,18 S140,22 160,12 S185,8 196,5 L196,70 L0,70 Z" fill="url(#chartGrad)"/>
+                    <path d="M0,55 C20,50 30,40 50,35 S80,20 100,18 S140,22 160,12 S185,8 196,5" fill="none" stroke="#b6ff4b" stroke-width="1.5"/>
+                    <circle cx="196" cy="5" r="3" fill="#b6ff4b" filter="url(#glow)"/>
+                    <defs>
+                      <filter id="glow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                    </defs>
+                  </svg>
+                </div>
+                <div class="phone-assets">
+                  <div class="phone-asset">
+                    <div><div class="pa-name">WASTE</div><div class="pa-sub">Waste Detected</div></div>
+                    <div class="pa-val" style="color:#ff6b6b">21%</div>
+                  </div>
+                  <div class="phone-asset">
+                    <div><div class="pa-name">ALERT</div><div class="pa-sub">Netflix</div></div>
+                    <div class="pa-val">in 3 days</div>
+                  </div>
+                  <div class="phone-asset">
+                    <div><div class="pa-name">SAVED</div><div class="pa-sub">Spotify Duo</div></div>
+                    <div class="pa-val">₹299/mo</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── S1: FEATURES ── -->
+    <section class="section" id="s1">
+      <div class="grid-bg"></div>
+      <div class="particles" id="particles1"></div>
+      <div class="orb orb-lime" style="width:500px;height:500px;bottom:-200px;right:100px;opacity:0.2;"></div>
+      <div class="bg-num">02</div>
+
+      <div class="inner">
+        <div class="section-eyebrow">Core Intelligence</div>
+        <h2 class="section-h2">Built to detect.<br/>Designed to <em>save.</em></h2>
+
+        <div class="features-grid">
+          <div class="feat-card">
+            <div class="feat-num">01 —</div>
+            <div class="feat-icon">🧠</div>
+            <div class="feat-title">Subscription Intelligence</div>
+            <div class="feat-desc">Automatically detects recurring payments, OTT platforms, SaaS tools, and hidden subscriptions across your accounts.</div>
+            <a class="feat-link" href="#">Learn More</a>
+          </div>
+          <div class="feat-card featured">
+            <div class="feat-num">02 —</div>
+            <div class="feat-icon">⚡</div>
+            <div class="feat-title">Smart Cancellation Engine</div>
+            <div class="feat-desc">Find unused subscriptions and instantly cancel, pause, or downgrade plans to save money.</div>
+            <a class="feat-link" href="#">Learn More</a>
+          </div>
+          <div class="feat-card">
+            <div class="feat-num">03 —</div>
+            <div class="feat-icon">💵</div>
+            <div class="feat-title">Refund Recovery</div>
+            <div class="feat-desc">Submind drafts refund emails, identifies failed charges, and helps recover lost money.</div>
+            <a class="feat-link" href="#">Learn More</a>
+          </div>
+          <div class="feat-card">
+            <div class="feat-num">04 —</div>
+            <div class="feat-icon">🔮</div>
+            <div class="feat-title">Recurring Spend Forecasting</div>
+            <div class="feat-desc">Predict upcoming bills, future spending, and possible overspending before it happens.</div>
+          </div>
+          <div class="feat-card">
+            <div class="feat-num">05 —</div>
+            <div class="feat-icon">💬</div>
+            <div class="feat-title">AI Financial Assistant</div>
+            <div class="feat-desc">Ask Submind questions like "What should I cancel?" or "Where am I wasting money?" and get instant answers.</div>
+          </div>
+          <div class="feat-card">
+            <div class="feat-num">06 —</div>
+            <div class="feat-icon">🔒</div>
+            <div class="feat-title">Secure Financial Automation</div>
+            <div class="feat-desc">Bank-grade encryption, secure API connections, and safe automation for every financial action.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── S2: HOW IT WORKS ── -->
+    <section class="section" id="s2">
+      <div class="grid-bg"></div>
+      <div class="particles" id="particles2"></div>
+      <div class="orb orb-blue" style="width:600px;height:600px;top:-150px;left:200px;opacity:0.18;"></div>
+      <div class="bg-num">03</div>
+
+      <div class="inner">
+        <div class="section-eyebrow">Process</div>
+        <h2 class="section-h2">Four steps to a<br/><em>self-optimizing</em> wallet.</h2>
+
+        <div class="timeline">
+          <div class="tl-step">
+            <div class="tl-dot">01</div>
+            <div class="tl-title">Connect Accounts</div>
+            <div class="tl-desc">Securely connect banks, cards, Gmail, and subscriptions.</div>
+          </div>
+          <div class="tl-step">
+            <div class="tl-dot">02</div>
+            <div class="tl-title">Analyze Spending</div>
+            <div class="tl-desc">Submind scans recurring charges, usage, and waste patterns.</div>
+          </div>
+          <div class="tl-step">
+            <div class="tl-dot">03</div>
+            <div class="tl-title">AI Recommends Actions</div>
+            <div class="tl-desc">Get suggestions to cancel, downgrade, refund, or optimize.</div>
+          </div>
+          <div class="tl-step">
+            <div class="tl-dot">04</div>
+            <div class="tl-title">Save Automatically</div>
+            <div class="tl-desc">Watch Submind recover money and reduce recurring spend over time.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── S3: DASHBOARD PREVIEW ── -->
+    <section class="section" id="s3">
+      <div class="grid-bg"></div>
+      <div class="particles" id="particles3"></div>
+      <div class="orb orb-lime" style="width:700px;height:700px;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.1;"></div>
+      <div class="bg-num">04</div>
+
+      <div class="inner">
+        <div class="section-eyebrow">The Platform</div>
+        <h2 class="section-h2">Your financial<br/><em>control center.</em></h2>
+
+        <div class="dashboard-wrap">
+          <div class="dash-header">
+            <div class="dash-dot dd1"></div>
+            <div class="dash-dot dd2"></div>
+            <div class="dash-dot dd3"></div>
+            <div class="dash-title">SUBMIND · COMMAND CENTER · LIVE</div>
+          </div>
+          <div class="dash-body">
+            <div class="dash-metric">
+              <div class="dm-lbl">Monthly Recurring Spend</div>
+              <div class="dm-val">₹24,580</div>
+              <div class="dm-chg">↓ Safe</div>
+            </div>
+            <div class="dash-metric">
+              <div class="dm-lbl">Savings Recovered</div>
+              <div class="dm-val">₹8,340</div>
+              <div class="dm-chg">↑ This month</div>
+            </div>
+            <div class="dash-metric">
+              <div class="dm-lbl">Waste Detected</div>
+              <div class="dm-val">21%</div>
+              <div class="dm-chg">Pred. Next Month: ₹19,900</div>
+            </div>
+
+            <div class="dash-wide">
+              <div class="dash-wide-title">Recurring Spend Trend — Last 30 Days</div>
+              <svg class="dash-chart-svg" viewBox="0 0 900 80" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="dashGrad" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stop-color="#b6ff4b" stop-opacity="0.2"/>
+                    <stop offset="100%" stop-color="#b6ff4b" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <path d="M0,65 L30,60 L60,55 L90,50 L120,52 L150,45 L180,40 L210,38 L240,42 L270,35 L300,30 L330,32 L360,25 L390,20 L420,22 L450,18 L480,15 L510,17 L540,12 L570,10 L600,13 L630,8 L660,6 L690,9 L720,5 L750,7 L780,4 L810,6 L840,3 L870,4 L900,2 L900,80 L0,80 Z" fill="url(#dashGrad)"/>
+                <path d="M0,65 L30,60 L60,55 L90,50 L120,52 L150,45 L180,40 L210,38 L240,42 L270,35 L300,30 L330,32 L360,25 L390,20 L420,22 L450,18 L480,15 L510,17 L540,12 L570,10 L600,13 L630,8 L660,6 L690,9 L720,5 L750,7 L780,4 L810,6 L840,3 L870,4 L900,2" fill="none" stroke="#b6ff4b" stroke-width="2"/>
+              </svg>
+            </div>
+
+            <div class="ai-actions">
+              <div class="ai-action">
+                <div class="aa-status"></div>
+                <div class="aa-text">Submind — Canceled Canva Pro and saved ₹499/month</div>
+                <div class="aa-time">2m ago</div>
+              </div>
+              <div class="ai-action">
+                <div class="aa-status" style="background:#4bf8ff;box-shadow:0 0 6px #4bf8ff;"></div>
+                <div class="aa-text">Submind — Detected duplicate Spotify + YouTube Music subscriptions</div>
+                <div class="aa-time">14m ago</div>
+              </div>
+              <div class="ai-action">
+                <div class="aa-status" style="animation-delay:0.7s;"></div>
+                <div class="aa-text">Submind — Refund request generated for failed ₹1,999 annual charge</div>
+                <div class="aa-time">1h ago</div>
+              </div>
+              <div class="ai-action">
+                <div class="aa-status" style="background:#ffbc2e;box-shadow:0 0 6px #ffbc2e;"></div>
+                <div class="aa-text">Submind — Predicted overspending risk next month: +₹3,200</div>
+                <div class="aa-time">2h ago</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── S4: CTA ── -->
+    <section class="section" id="s4">
+      <div class="grid-bg"></div>
+      <div class="particles" id="particles4"></div>
+      <div class="orb orb-lime" style="width:800px;height:800px;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.2;filter:blur(120px);"></div>
+
+      <div class="inner">
+        <div class="cta-pre">// Limited Early Access</div>
+        <h2 class="cta-h2">Stop managing<br/>money <em>manually.</em></h2>
+        <p class="cta-sub">Join thousands using Submind to detect waste, automate savings, and take control of recurring spend.</p>
+        <div class="cta-input-wrap">
+          <input type="email" placeholder="Enter your email"/>
+          <button class="btn-primary" style="white-space:nowrap;padding:10px 24px;font-size:0.8rem;">Request Early Access</button>
+        </div>
+        <div class="cta-badges">
+          <div class="badge">No credit card required</div>
+          <div class="badge">256-bit encryption</div>
+          <div class="badge">Secure API Connections</div>
+          <div class="badge">Cancel anytime</div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /stage -->
+</div><!-- /scene -->
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-copy">© 2026 Submind Technologies Inc. — All rights reserved.</div>
+    <div id="section-label-foot" class="scroll-hint">
+      Scroll to navigate
+      <div class="scroll-arrow"><span></span><span></span></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── STATE ──
+let current = 0;
+const total = 5;
+const SECTION_LABELS = [
+  '01 / 05 — Overview',
+  '02 / 05 — Features',
+  '03 / 05 — How It Works',
+  '04 / 05 — Platform',
+  '05 / 05 — Access'
+];
+
+// Z positions matching CSS translateZ on sections
+const Z_DEPTHS = [0, -1400, -2800, -4200, -5600];
+const stage = document.getElementById('stage');
+const overlay = document.getElementById('overlay');
+const sectionLabel = document.getElementById('section-label');
+const dots = document.querySelectorAll('.dot');
+
+const sections = document.querySelectorAll('.section');
+
+function goTo(idx) {
+  if (idx < 0 || idx >= total) return;
+  // Flash
+  overlay.classList.add('flash');
+  setTimeout(() => overlay.classList.remove('flash'), 300);
+
+  current = idx;
+  // Move stage to bring current section to Z=0
+  const z = -Z_DEPTHS[idx];
+  stage.style.transform = `translateZ(${z}px)`;
+
+  // Blur/fade non-active sections
+  sections.forEach((s,i) => {
+    if (i === idx) {
+      s.classList.remove('inactive');
+    } else {
+      s.classList.add('inactive');
+    }
+  });
+
+  // Update dots
+  dots.forEach((d,i) => d.classList.toggle('active', i === idx));
+
+  // Label
+  sectionLabel.textContent = SECTION_LABELS[idx];
+
+  // Scroll hint
+  const foot = document.getElementById('section-label-foot');
+  if (idx === total - 1) {
+    foot.style.opacity = '0';
+  } else {
+    foot.style.opacity = '1';
+  }
+}
+
+// ── SCROLL ──
+let scrolling = false;
+function onWheel(e) {
+  if (scrolling) return;
+  scrolling = true;
+  if (e.deltaY > 0) goTo(current + 1);
+  else goTo(current - 1);
+  setTimeout(() => { scrolling = false; }, 1200);
+}
+window.addEventListener('wheel', onWheel, { passive: true });
+
+// ── TOUCH ──
+let touchY = 0;
+window.addEventListener('touchstart', e => { touchY = e.touches[0].clientY; }, { passive: true });
+window.addEventListener('touchend', e => {
+  const dy = touchY - e.changedTouches[0].clientY;
+  if (Math.abs(dy) < 40) return;
+  if (scrolling) return;
+  scrolling = true;
+  if (dy > 0) goTo(current + 1);
+  else goTo(current - 1);
+  setTimeout(() => { scrolling = false; }, 1200);
+}, { passive: true });
+
+// ── KEYBOARD ──
+window.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown' || e.key === 'PageDown') goTo(current + 1);
+  if (e.key === 'ArrowUp' || e.key === 'PageUp') goTo(current - 1);
+});
+
+// ── CURSOR ──
+const cur = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+function animCursor() {
+  cur.style.left = mx + 'px'; cur.style.top = my + 'px';
+  rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(animCursor);
+}
+animCursor();
+document.querySelectorAll('button, a, .dot, .feat-card').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cur.style.transform = 'translate(-50%,-50%) scale(2)';
+    ring.style.transform = 'translate(-50%,-50%) scale(1.4)';
+    ring.style.opacity = '0.8';
+  });
+  el.addEventListener('mouseleave', () => {
+    cur.style.transform = 'translate(-50%,-50%) scale(1)';
+    ring.style.transform = 'translate(-50%,-50%) scale(1)';
+    ring.style.opacity = '0.5';
+  });
+});
+
+// ── PARTICLES ──
+function spawnParticles(containerId, count) {
+  const c = document.getElementById(containerId);
+  if (!c) return;
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.bottom = '-10px';
+    p.style.animationDuration = (8 + Math.random() * 14) + 's';
+    p.style.animationDelay = (Math.random() * 12) + 's';
+    p.style.width = p.style.height = (1 + Math.random() * 2.5) + 'px';
+    p.style.opacity = '0';
+    c.appendChild(p);
+  }
+}
+['particles0','particles1','particles2','particles3','particles4'].forEach(id => spawnParticles(id, 30));
+
+// ── PARALLAX TILT on mouse ──
+document.addEventListener('mousemove', e => {
+  const x = (e.clientX / window.innerWidth - 0.5) * 6;
+  const y = (e.clientY / window.innerHeight - 0.5) * -4;
+  const z = -Z_DEPTHS[current];
+  stage.style.transform = `translateZ(${z}px) rotateY(${x * 0.15}deg) rotateX(${y * 0.15}deg)`;
+});
+
+// ── ANIMATE TICKER (live feel) ──
+function animateTicker() {
+  const val = document.querySelector('.phone-val');
+  const chg = document.querySelector('.phone-change');
+  if (!val) return;
+  const base = 4524108;
+  const delta = (Math.random() - 0.45) * 1000;
+  const newVal = base + (Math.sin(Date.now() / 3000) * 16000) + delta;
+  val.textContent = '₹' + newVal.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  const pct = ((newVal - base) / base * 100);
+  chg.textContent = (pct >= 0 ? '↑ +' : '↓ ') + Math.abs(pct).toFixed(2) + '% Today';
+  chg.style.color = pct >= 0 ? 'var(--lime)' : '#ff6b6b';
+}
+setInterval(animateTicker, 2200);
+
+// Initialize
+goTo(0);
+</script>
+</body>
+</html>
