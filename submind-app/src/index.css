@@ -47,7 +47,13 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  cursor: none !important;
+}
+
+/* Custom cursor only on devices with a real mouse pointer */
+@media (hover: hover) and (pointer: fine) {
+  *, *::before, *::after {
+    cursor: none !important;
+  }
 }
 
 html, body, #root {

@@ -49,6 +49,10 @@ export default function Landing() {
   };
 
   useEffect(() => {
+    // On mobile, let the page scroll normally — no 3D handlers
+    const isMobile = window.innerWidth <= 900;
+    if (isMobile) return;
+
     const handleWheel = (e) => {
       if (scrollingRef.current) return;
       scrollingRef.current = true;

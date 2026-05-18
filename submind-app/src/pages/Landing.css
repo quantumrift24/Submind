@@ -6,7 +6,6 @@
   background: var(--bg);
   font-family: var(--font);
   color: var(--white);
-  cursor: none;
   position: relative;
 }
 
@@ -99,7 +98,7 @@
   font-size: 0.85rem; font-weight: 400; color: var(--grey);
   display: inline-flex; align-items: center; letter-spacing: 0.04em;
   text-transform: uppercase; transition: color 0.2s;
-  background: none; border: none; cursor: none;
+  background: none; border: none; cursor: pointer;
 }
 .landing-nav-links button:hover { color: var(--lime); }
 .landing-nav-cta {
@@ -107,7 +106,7 @@
   font-family: var(--font); font-size: 0.82rem; font-weight: 700;
   letter-spacing: 0.05em; text-transform: uppercase;
   border: none; border-radius: 100px; padding: 11px 28px;
-  cursor: none; transition: transform 0.18s, box-shadow 0.18s;
+  cursor: pointer; transition: transform 0.18s, box-shadow 0.18s;
   box-shadow: 0 0 24px rgba(182,255,75,0.3);
   text-decoration: none;
 }
@@ -123,7 +122,7 @@
 .dot {
   width: 8px; height: 8px; border-radius: 50%;
   border: 1.5px solid var(--grey2);
-  cursor: none; transition: all 0.3s;
+  cursor: pointer; transition: all 0.3s;
   background: transparent; padding: 0; margin: 0;
 }
 .dot.active { background: var(--lime); border-color: var(--lime); box-shadow: 0 0 10px var(--lime); }
@@ -159,13 +158,13 @@
 .btn-primary {
   background: var(--lime); color: #060810; font-family: var(--font); font-size: 0.88rem; font-weight: 700;
   letter-spacing: 0.05em; text-transform: uppercase; border: none; border-radius: 100px; padding: 14px 36px;
-  cursor: none; transition: all 0.2s; box-shadow: 0 0 32px rgba(182,255,75,0.35); text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s; box-shadow: 0 0 32px rgba(182,255,75,0.35); text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
 }
 .btn-primary:hover { transform: scale(1.04) translateY(-1px); box-shadow: 0 0 60px rgba(182,255,75,0.55); color: #060810; }
 .btn-ghost {
   background: transparent; color: var(--white); font-family: var(--font); font-size: 0.88rem; font-weight: 400;
   letter-spacing: 0.04em; border: 1px solid var(--border2); border-radius: 100px; padding: 14px 30px;
-  cursor: none; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
 }
 .btn-ghost:hover { border-color: var(--lime); color: var(--lime); }
 
@@ -211,14 +210,14 @@
 .section-h2 { font-size: clamp(2rem,3.5vw,3rem); font-weight: 700; letter-spacing: -0.025em; line-height: 1.1; margin-bottom: 34px; }
 .section-h2 em { font-style: normal; color: var(--lime); }
 .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: stretch; }
-.feat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 24px; position: relative; overflow: hidden; transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s; cursor: none; display: flex; flex-direction: column; height: 100%; text-decoration: none; color: var(--white); }
+.feat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 24px; position: relative; overflow: hidden; transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s; cursor: pointer; display: flex; flex-direction: column; height: 100%; text-decoration: none; color: var(--white); }
 .feat-card:hover { transform: translateY(-6px); border-color: rgba(182,255,75,0.35); box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(182,255,75,0.08); }
 .feat-card.featured { border-color: rgba(182,255,75,0.4); background: linear-gradient(145deg, rgba(182,255,75,0.07), var(--card)); }
 .feat-num { font-family: var(--mono); font-size: 0.65rem; color: var(--lime); letter-spacing: 0.15em; margin-bottom: 12px; opacity: 0.7; }
 .feat-icon { width: 40px; height: 40px; border-radius: 12px; background: rgba(182,255,75,0.1); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; font-size: 1.2rem; }
 .feat-title { font-size: 1.05rem; font-weight: 600; margin-bottom: 6px; letter-spacing: -0.01em; }
 .feat-desc { font-size: 0.85rem; color: var(--grey); line-height: 1.65; font-weight: 300; }
-.feat-link { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--lime); font-family: var(--mono); text-decoration: none; margin-top: 12px; letter-spacing: 0.06em; cursor: none; }
+.feat-link { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--lime); font-family: var(--mono); text-decoration: none; margin-top: 12px; letter-spacing: 0.06em; cursor: pointer; }
 .feat-link::after { content: '→'; transition: transform 0.2s; }
 .feat-link:hover::after { transform: translateX(4px); }
 
@@ -292,54 +291,215 @@
 #overlay { position: fixed; inset: 0; z-index: 500; pointer-events: none; background: var(--bg); opacity: 0; transition: opacity 0.3s; }
 #overlay.flash { opacity: 0.35; }
 
-/* Responsive */
+/* ═══════════════════════════════════════════════
+   RESPONSIVE — MOBILE
+   On mobile, disable 3D parallax entirely and
+   switch to a normal scrolling page layout.
+   ═══════════════════════════════════════════════ */
+
 @media (max-width: 900px) {
-  #s0 .landing-inner { grid-template-columns: 1fr; }
-  .hero-right { display: none; }
-  .features-grid { grid-template-columns: 1fr; }
-  .landing-nav-inner, .footer-inner, .section-label-inner { padding: 18px 24px; }
-  #s0 .landing-inner, #s1 .landing-inner, #s2 .landing-inner, #s3 .landing-inner, #s4 .landing-inner { padding: 0 24px; }
+
+  /* ── Disable 3D perspective system ── */
+  .landing-root {
+    height: auto;
+    overflow: auto;
+    overflow-x: hidden;
+  }
+  #scene {
+    position: relative;
+    perspective: none;
+    overflow: visible;
+  }
+  #stage {
+    position: relative;
+    transform: none !important;
+    transform-style: flat;
+  }
+
+  /* ── Make all sections flow naturally ── */
+  .landing-section {
+    position: relative !important;
+    width: 100%;
+    height: auto !important;
+    min-height: auto !important;
+    transform: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    pointer-events: auto !important;
+    display: flex;
+    align-items: flex-start;
+    padding: 80px 0 60px;
+  }
+  .landing-section.inactive {
+    opacity: 1 !important;
+    filter: none !important;
+    pointer-events: auto !important;
+  }
+
+  /* ── Hide desktop-only UI ── */
+  #dots { display: none; }
+  .scanline { display: none; }
+  #overlay { display: none; }
+  .section-label-wrap { display: none; }
   .landing-nav-links { display: none; }
-  #dots { right: 16px; }
-  .hero-h1 { font-size: clamp(2rem, 6vw, 3rem); }
-  .hero-sub { font-size: 0.92rem; }
-  .hero-btns { flex-direction: column; gap: 12px; width: 100%; }
+  .scroll-hint { display: none; }
+
+  /* ── Nav ── */
+  .landing-nav-inner { padding: 14px 20px; }
+  .landing-nav-logo { font-size: 1.2rem; }
+
+  /* ── Footer ── */
+  .landing-footer {
+    position: relative;
+    background: var(--bg2);
+  }
+  .footer-inner { padding: 18px 20px; }
+
+  /* ── Section inner padding ── */
+  .landing-inner { padding: 0 20px; }
+
+  /* ── S0: Hero ── */
+  #s0 { padding-top: 100px; }
+  #s0 .landing-inner {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .hero-right { display: none; }
+  .hero-h1 { font-size: clamp(1.8rem, 7vw, 2.6rem); }
+  .hero-sub { font-size: 0.9rem; max-width: 100%; }
+  .hero-btns {
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
   .hero-btns .btn-primary,
-  .hero-btns .btn-ghost { width: 100%; text-align: center; }
-  .hero-stats { flex-direction: column; gap: 16px; }
-  .stat-val { font-size: 1.5rem; }
-  .section-h2 { font-size: clamp(1.6rem, 4vw, 2.4rem); }
-  .timeline { flex-direction: column; gap: 24px; }
-  .timeline::before { display: none; }
-  .tl-step { align-items: flex-start; text-align: left; padding: 0; flex-direction: row; gap: 16px; }
-  .tl-dot { flex-shrink: 0; width: 44px; height: 44px; font-size: 0.7rem; margin-bottom: 0; }
-  .dash-body { grid-template-columns: 1fr; }
-  .ai-actions { grid-column: span 1; }
-  .cta-input-wrap { flex-direction: column; border-radius: 16px; padding: 12px; gap: 10px; }
-  .cta-input-wrap input { text-align: center; }
-  .cta-input-wrap .btn-primary { width: 100%; border-radius: 100px; }
-  .cta-badges { flex-direction: column; align-items: center; gap: 10px; }
+  .hero-btns .btn-ghost {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+  .hero-stats {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .stat-val { font-size: 1.4rem; }
+
+  /* ── S1: Features ── */
+  .section-h2 { font-size: clamp(1.5rem, 5vw, 2.2rem); }
+  .section-eyebrow { font-size: 0.65rem; }
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .feat-card { padding: 18px; }
+  .feat-title { font-size: 0.95rem; }
+  .feat-desc { font-size: 0.82rem; }
+  .feat-link { font-size: 0.75rem; }
   .bg-num { display: none; }
-  .dashboard-wrap { border-radius: 16px; }
-  .dash-header { padding: 10px 16px; }
-  .dash-body { padding: 16px; gap: 12px; }
+
+  /* ── S2: Timeline ── */
+  .timeline {
+    flex-direction: column;
+    gap: 20px;
+  }
+  .timeline::before { display: none; }
+  .tl-step {
+    flex-direction: row;
+    align-items: flex-start;
+    text-align: left;
+    padding: 0;
+    gap: 14px;
+  }
+  .tl-dot {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    font-size: 0.65rem;
+    margin-bottom: 0;
+  }
+  .tl-title { font-size: 0.9rem; }
+  .tl-desc { font-size: 0.78rem; }
+
+  /* ── S3: Dashboard preview ── */
+  .dashboard-wrap {
+    border-radius: 14px;
+    animation: none;
+    transform: none;
+  }
+  .dash-header { padding: 10px 14px; }
+  .dash-body {
+    grid-template-columns: 1fr;
+    padding: 14px;
+    gap: 10px;
+  }
+  .ai-actions { grid-column: span 1; }
+  .dm-val { font-size: 1.3rem; }
+  .dm-lbl { font-size: 0.65rem; }
+  .aa-text { font-size: 0.72rem; }
+  .aa-time { font-size: 0.6rem; }
+
+  /* ── S4: CTA ── */
+  .cta-h2 { font-size: clamp(1.5rem, 5vw, 2rem); }
+  .cta-sub { font-size: 0.88rem; }
+  .cta-input-wrap {
+    flex-direction: column;
+    border-radius: 14px;
+    padding: 12px;
+    gap: 10px;
+    max-width: 100%;
+  }
+  .cta-input-wrap input { text-align: center; }
+  .cta-input-wrap .btn-primary {
+    width: 100%;
+    border-radius: 100px;
+  }
+  .cta-badges {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ── Hide glow orbs on mobile (performance) ── */
+  .orb { opacity: 0.15 !important; }
+  .particles { display: none; }
+  .grid-bg { opacity: 0.3; }
 }
 
 @media (max-width: 480px) {
-  .landing-nav-inner, .footer-inner, .section-label-inner { padding: 14px 16px; }
-  #s0 .landing-inner, #s1 .landing-inner, #s2 .landing-inner, #s3 .landing-inner, #s4 .landing-inner { padding: 0 16px; }
-  .landing-nav-cta { padding: 9px 20px; font-size: 0.75rem; }
-  .hero-h1 { font-size: 1.8rem; }
-  .hero-sub { font-size: 0.85rem; }
-  .hero-tag { font-size: 0.65rem; }
-  .feat-card { padding: 18px; }
-  .feat-title { font-size: 0.95rem; }
-  .feat-desc { font-size: 0.8rem; }
-  .cta-h2 { font-size: 1.6rem; }
-  .cta-sub { font-size: 0.88rem; }
-  .dm-val { font-size: 1.3rem; }
-  .scroll-hint { font-size: 0.6rem; }
-  #dots { right: 10px; gap: 8px; }
-  .dot { width: 6px; height: 6px; }
+  .landing-nav-inner { padding: 12px 16px; }
+  .landing-nav-cta { padding: 8px 18px; font-size: 0.72rem; }
+  .landing-nav-logo { font-size: 1.1rem; }
+
+  .landing-section { padding: 60px 0 40px; }
+  #s0 { padding-top: 80px; }
+  .landing-inner { padding: 0 16px; }
+
+  .hero-h1 { font-size: 1.6rem; }
+  .hero-sub { font-size: 0.82rem; }
+  .hero-tag { font-size: 0.6rem; }
+  .hero-stats { gap: 12px; }
+  .stat-val { font-size: 1.2rem; }
+  .stat-lbl { font-size: 0.65rem; }
+
+  .section-h2 { font-size: 1.3rem; }
+  .feat-card { padding: 14px; }
+  .feat-icon { width: 32px; height: 32px; font-size: 1rem; }
+  .feat-title { font-size: 0.88rem; }
+  .feat-desc { font-size: 0.78rem; }
+
+  .tl-dot { width: 36px; height: 36px; }
+  .tl-title { font-size: 0.85rem; }
+  .tl-desc { font-size: 0.75rem; }
+
+  .dash-body { padding: 10px; gap: 8px; }
+  .dash-metric { padding: 12px; }
+  .dm-val { font-size: 1.15rem; }
+
+  .cta-h2 { font-size: 1.3rem; }
+  .cta-sub { font-size: 0.82rem; }
+  .cta-pre { font-size: 0.6rem; }
+
+  .footer-inner { padding: 14px 16px; }
+  .footer-copy { font-size: 0.6rem; }
 }
 
