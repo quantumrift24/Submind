@@ -59,12 +59,7 @@ export default function AppLayout() {
       </AnimatePresence>
 
       {/* Sidebar */}
-      <motion.aside
-        className={`sidebar ${sidebarOpen ? 'open' : ''}`}
-        initial={{ x: -260 }}
-        animate={{ x: 0 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      >
+      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <Link to="/app" className="sidebar-logo" style={{ textDecoration: 'none', display: 'block' }}>
           <span>Sub</span>mind
           <div style={{ fontSize: '0.55rem', fontFamily: 'var(--mono)', color: 'var(--grey2)', letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: 2 }}>
@@ -122,7 +117,7 @@ export default function AppLayout() {
             <span style={{ fontSize: '0.7rem', color: 'var(--grey2)' }}>⏻</span>
           </motion.div>
         </div>
-      </motion.aside>
+      </aside>
 
       {/* Main Content */}
       <div className="main-content">
